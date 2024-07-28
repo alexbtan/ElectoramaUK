@@ -15,4 +15,11 @@ export const partyColours = {
   };
 
 export const ethColours = {'White': '#F8EDED', 'Asian': '#FF8225', 'Other': '#B43F3F', 'Black, African or Caribbean': '#FDFFD2', 'Mixed or Multiple ethnic groups': '#DA7297',};
-export const ageColours = {'0 to 17': '', '18 to 24': '', '25 to 34': '', '35 to 49': '', '50 to 64': '', '65 and over': ''};
+export const ageColours = {
+  '0 to 17': 'rgb(135, 206, 250)',  // Light Sky Blue
+  '18 to 24': 'rgb(60, 179, 113)',  // Medium Sea Green
+  '25 to 34': 'rgb(255, 165, 0)',   // Orange
+  '35 to 49': 'rgb(255, 99, 71)',   // Tomato
+  '50 to 64': 'rgb(75, 0, 130)',    // Indigo
+  '65 and over': 'rgb(128, 128, 128)' // Gray
+};
