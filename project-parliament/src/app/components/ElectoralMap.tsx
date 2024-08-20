@@ -1,32 +1,39 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Select, Option, Radio } from "@material-tailwind/react";
-import mapGeography from '../../../public/650map_new.json';
-import seatData from '../../../public/2024election.json';
-import ageData from '../../../public/age2022.json';
-import ethData from '../../../public/ethnicity2021.json';
+import { Select, Option } from "@material-tailwind/react";
+import mapGeographyJson from '../../../public/650map_new.json';
+import seatDataJson from '../../../public/2024election.json';
+import ethDataJson from '../../../public/ethnicity2021.json';
+import ageDataJson from '../../../public/age2022.json';
 import * as d3 from 'd3';
 import * as topojson from 'topojson-client';
-import {partyColours} from '../constants/index.js';
+import { GeometryObject, Topology } from 'topojson-specification';
+import { partyColours } from '../constants/index.js';
 
-const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
+const ElectoralMap = ({onMapClick} : {onMapClick : (seatName : string) => void}) => {
   const svgRef = useRef(null);
+  const refContainer = useRef();
   const [selectedMapType, setSelectedMapType] = useState('winners');
   const [selectedPartyType, setSelectedPartyType] = useState('labour');
   const [selectedAgeType, setSelectedAgeType] = useState('0');
   const [selectedEthType, setSelectedEthType] = useState('White');
+  const mapHeight = 770;
+  const mapWidth = 750;
 
-  const mapHeight = 820;
-  const mapWidth = 800;
-
+  const seatData: SeatDataCollection = seatDataJson as SeatDataCollection;
+  const ethData: EthDataCollection = ethDataJson as EthDataCollection;
+  const ageData: AgeDataCollection = ageDataJson as AgeDataCollection;
+  const colours: Colours = partyColours as Colours;
+  const mapGeography: MapData = mapGeographyJson as MapData;
+  
   useEffect(() => {
     // Select the SVG element and set its attributes
     const svg = d3.select(svgRef.current)
       .attr('height', mapHeight)
       .attr('width', mapWidth)
       .attr('preserveAspectRatio', 'xMinYMin meet')
-      .attr('viewBox', '00 0 1000 1000'); 
+      .attr('viewBox', `00 0 ${1000} ${1000}`); 
     
     // CLears fixed map, stopping duplication when moving map
     svg.selectAll('*').remove();
@@ -47,6 +54,17 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
     // Fetch and process the GeoJSON data
     const geoData = topojson.feature(mapGeography, mapGeography.objects.map).features;
 
+    const handleClick = (event: MouseEvent, feature: MapData) => {
+      // Remove highlight from all paths
+      d3.selectAll('.map-path').classed('highlight', false);
+    
+      // Highlight the clicked path
+      d3.select(event.target as SVGPathElement).classed('highlight', true);
+      onMapClick(feature.properties.name);
+      path.bounds(feature);
+      zoomToFeature(feature);
+    };
+    
     // Bind data and create path elements
     const paths = mapGroup.selectAll('path')
     .data(geoData)
@@ -54,20 +72,12 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
     .attr('d', path)
     .attr('class', 'map-path') // Add a class for styling
     .attr('fill', mapColours)
-    .on('click', function(event, d) {
-      // Remove highlight from all paths
-      d3.selectAll('.map-path').classed('highlight', false);
-      // Highlight the clicked path
-      d3.select(this).classed('highlight', true);
-      // Zoom to the clicked path
-      onMapClick(d.properties.name);
-      path.bounds(d);
-      zoomToFeature(d);
-
+    .on('click', function(event : MouseEvent, feature : MapData) {
+      handleClick(event, feature);
     });
 
     // Zoom function to handle the zoom and pan transformations
-    const zoomed = (event) => {
+    const zoomed = (event: d3.D3ZoomEvent<SVGGElement, unknown>) => {
       mapGroup.attr('transform', event.transform);
     };
 
@@ -84,7 +94,7 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
       initialTransform
     );
      // Function to zoom to a specific feature
-     const zoomToFeature = (feature) => {
+     const zoomToFeature = (feature : MapData) => {
       const bounds = path.bounds(feature);
       const dx = bounds[1][0] - bounds[0][0];
       const dy = bounds[1][1] - bounds[0][1];
@@ -105,24 +115,18 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
   
   // MAP OPTIONS #####################################################################
 
-  // Handle change event
-  const handleChange = (event) => {
-    setSelectedMapType(event);
-  };
-
-  const handlePartyChange = (event) => {
-    setSelectedPartyType(event);
-  };
-
-  const handleAgeChange = (event) => {
-    setSelectedAgeType(event);
-  };
-  const handleEthChange = (event) => {
-    setSelectedEthType(event);
+  const handleMapChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (
+    value: string | undefined
+  ) => {
+    if (value !== undefined) {
+      setter(value);
+    } else {
+      setter(''); // or handle this case as you see fit
+    }
   };
 
   // Adds opacity values to colours for choropleth
-  const addOpacityToRgb = (rgb, opacity) => {
+  const addOpacityToRgb = (rgb : string, opacity : number) => {
     // Extract the RGB values from the input string
     const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
     if (!match) return rgb; // If input is not a valid RGB string, return it as-is
@@ -136,21 +140,21 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
   };
 
   // Decides map colours depending on types
-  const mapColours = (d) => {
+  const mapColours = (feature : MapData) => {
     if (selectedMapType === 'choroplethparty') {
       var partyVotes = 0;
       try{
-        partyVotes = seatData[d.properties.name].partyInfo[selectedPartyType].total;
+        partyVotes = seatData[feature.properties.name].partyInfo[selectedPartyType].total;
       }
       catch(err) {
         partyVotes = 0;
       }
-      const electorate = seatData[d.properties.name].seatInfo.electorate * seatData[d.properties.name].seatInfo.turnout / 100;
-      return addOpacityToRgb(partyColours[selectedPartyType], partyVotes / electorate);
+      const electorate = seatData[feature.properties.name].seatInfo.electorate * seatData[feature.properties.name].seatInfo.turnout / 100;
+      return addOpacityToRgb(colours[selectedPartyType], partyVotes / electorate);
     } else if (selectedMapType === 'choroplethage') {
       var opacity = 0;
       try{
-        opacity = ageData[d.properties.name][Number(selectedAgeType)].con_pc;
+        opacity = ageData[feature.properties.name][Number(selectedAgeType)].con_pc;
       }
       catch(err) {
         opacity = 0;
@@ -160,8 +164,8 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
       var opacity = 0;
       try{
         for(let i = 0; i < 5; i++){
-          if (ethData[d.properties.name][i].groups == selectedEthType){
-            opacity = ethData[d.properties.name][i].con_pc;
+          if (ethData[feature.properties.name][i].groups == selectedEthType){
+            opacity = ethData[feature.properties.name][i].con_pc;
             break;
           }
         }
@@ -171,7 +175,7 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
       }
       return addOpacityToRgb('rgb(228, 0, 59)', opacity);
     } else {
-      return partyColours[seatData[d.properties.name].seatInfo.current];
+      return colours[seatData[feature.properties.name].seatInfo.current];
     }
   };
 
@@ -179,7 +183,7 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
     <div>
       <div className="flex w-72 flex-row gap-6 mt-4 mx-4">
         <div >
-          <Select variant="static" label="Select Map Type:" id="dropdown" value={selectedMapType} onChange={handleChange}>
+          <Select variant="static" label="Select Map Type:" id="dropdown" value={selectedMapType} onChange={(value) => handleMapChange(setSelectedMapType)(value)}>
             <Option value="winners">Winners</Option>
             <Option value="choroplethparty">Choropleth by vote share</Option>
             <Option value="choroplethage">Choropleth by age</Option>
@@ -188,7 +192,7 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
         </div>
         {selectedMapType === "choroplethparty" && (
         <div>
-          <Select variant="static" label="Select Party:" id="dropdown" value={selectedPartyType} onChange={handlePartyChange}>
+          <Select variant="static" label="Select Party:" id="dropdown" value={selectedPartyType} onChange={(value) => handleMapChange(setSelectedPartyType)(value)}>
             <Option value="labour">Labour</Option>
             <Option value="conservative">Conservatives</Option>
             <Option value="libdems">Liberal Democrats</Option>
@@ -200,13 +204,13 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
             <Option value="alliance">Alliance</Option>
             <Option value="green">Greens</Option>
             <Option value="sdlp">SDLP</Option>
-            <Option value="reform">REform UK</Option>
+            <Option value="reform">Reform UK</Option>
             <Option value="uu">Ulster Unionists</Option>
           </Select>
         </div>)}
         {selectedMapType === "choroplethage" && (
         <div>
-          <Select variant="static" label="Select Age Group:" id="dropdown" value={selectedAgeType} onChange={handleAgeChange}>
+          <Select variant="static" label="Select Age Group:" id="dropdown" value={selectedAgeType} onChange={(value) => handleMapChange(setSelectedAgeType)(value)}>
             <Option value="0">0 to 17</Option>
             <Option value="1">18 to 24</Option>
             <Option value="2">25 to 34</Option>
@@ -217,7 +221,7 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
         </div>)}
         {selectedMapType === "choropletheth" && (
         <div>
-          <Select variant="static" label="Select Ethnicitiy Group:" id="dropdown" value={selectedEthType} onChange={handleEthChange}>
+          <Select variant="static" label="Select Ethnicitiy Group:" id="dropdown" value={selectedEthType} onChange={(value) => handleMapChange(setSelectedEthType)(value)}>
             <Option value="White">White</Option>
             <Option value="Mixed or Multiple ethnic groups">Mixed or Multiple ethnic groups</Option>
             <Option value="Asian">Asian</Option>
@@ -226,7 +230,7 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (string) => void}) => {
           </Select>
         </div>)}
       </div>
-      <svg className="h-[750px]" ref={svgRef}></svg>
+      <svg className="max-h-full" ref={svgRef}></svg>
     </div>
   );
 }

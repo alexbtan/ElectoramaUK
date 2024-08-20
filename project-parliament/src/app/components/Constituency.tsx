@@ -2,10 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 
-const Constituency = ({seatName}) => {
+const Constituency = ({seatName} : {seatName : string}) => {
   const [data, setData] = useState(null);
   const [desc, setDesc] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -50,8 +49,6 @@ const Constituency = ({seatName}) => {
         setDesc(result2);
       } catch (error) {
         var p = 1;
-      } finally {
-        setLoading(false);
       }
     };
     console.log('Hello!');
@@ -60,10 +57,9 @@ const Constituency = ({seatName}) => {
     }
   }, [seatName]);
 
-  if (loading) return <div>Select a Constituency on the map to view constituency data</div>;
-
   return (
     <div>
+      {data != null ? 
       <div className="flex items-center flex-col">
           <h1 className="font-bold mt-8 text-5xl">{seatName}</h1>
           <div className="flex flex-row">
@@ -77,7 +73,9 @@ const Constituency = ({seatName}) => {
             </div>
             <img className="block select-none mx-auto bg-gray-300 transition-colors duration-300 rounded-full w-[240px]" src={data.value[0].member.value.thumbnailUrl} alt={'MP Photo not found'}/>
           </div>
-        </div>
+        </div> :
+        <div>Select a Constituency on the map to view constituency data</div>
+      }
     </div>
   );
 };

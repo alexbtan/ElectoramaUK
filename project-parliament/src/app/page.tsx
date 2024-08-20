@@ -22,7 +22,7 @@ export default function Home() {
   };
 
   return (
-    <main className="h-screen bg-[#F7DCB9]">
+    <main className="h-screen bg-[#F7DCB9] max-h-screen">
       <NavBar />
       <div className="w-full flex flex-row">
        <ElectoralMap onMapClick={handleMapClick}/>

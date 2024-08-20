@@ -75,3 +75,21 @@ type ChartData = {
 type Colours = {
     [key: string]: string;
 };
+
+type MapGeometry = {
+    coordinates: number[];
+    type: string;
+};
+
+type MapProperties = {
+    name: string;
+};
+
+type MapData = {
+    type?: string;
+    geometry?: GeoJSON.Geometry;
+    properties?: MapProperties;
+    features?: GeoJSON.Feature[];
+    objects?: any;
+    arcs?: any;
+};
