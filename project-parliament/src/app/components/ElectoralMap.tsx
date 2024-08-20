@@ -198,7 +198,7 @@ const ElectoralMap = ({onMapClick} : {onMapClick : (seatName : string) => void})
             <Option value="libdems">Liberal Democrats</Option>
             <Option value="plaidcymru">Plaid Cymru</Option>
             <Option value="snp">SNP</Option>
-            <Option value="other">Indepedant</Option>
+            <Option value="other">Indepedent</Option>
             <Option value="dup">DUP</Option>
             <Option value="sinnfein">Sinn Fein</Option>
             <Option value="alliance">Alliance</Option>

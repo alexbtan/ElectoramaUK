@@ -22,32 +22,29 @@ export default function Home() {
   };
 
   return (
-    <main className="h-screen bg-[#F7DCB9] max-h-screen">
-      <NavBar />
-      <div className="w-full flex flex-row">
-       <ElectoralMap onMapClick={handleMapClick}/>
-       <div className="w-full flex flex-col items-center">
-          <h1 className="font-bold my-8 text-5xl">{selectedSeatName}</h1>
-          <Tabs className="w-full" value="html">
-            <TabsHeader>
-              <Tab key="data" value="data">
-                Constituency Data
-              </Tab>
-              <Tab key="info"  value="info">
-                Constituency Information
-              </Tab>
-            </TabsHeader>
-            <TabsBody>
-              <TabPanel key="data" value="data">
-                <AreaInfo seatName={selectedSeatName}/>
-              </TabPanel>
-              <TabPanel  key="info"  value="info">
-                {/* <Constituency seatName={selectedSeatName}/> */}
-              </TabPanel>
-            </TabsBody>
-          </Tabs>
-        </div>
+    <div className="w-full flex flex-row">
+      <ElectoralMap onMapClick={handleMapClick}/>
+      <div className="w-full flex flex-col items-center">
+        <h1 className="font-bold my-8 text-5xl">{selectedSeatName}</h1>
+        <Tabs className="w-full" value="html">
+          <TabsHeader>
+            <Tab key="data" value="data">
+              Constituency Data
+            </Tab>
+            <Tab key="info"  value="info">
+              Constituency Information
+            </Tab>
+          </TabsHeader>
+          <TabsBody>
+            <TabPanel key="data" value="data">
+              <AreaInfo seatName={selectedSeatName}/>
+            </TabPanel>
+            <TabPanel  key="info"  value="info">
+              <Constituency seatName={selectedSeatName}/>
+            </TabPanel>
+          </TabsBody>
+        </Tabs>
       </div>
-    </main>
+    </div>
   );
 }

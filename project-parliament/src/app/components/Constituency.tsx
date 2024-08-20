@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react';
 const Constituency = ({seatName} : {seatName : string}) => {
   const [data, setData] = useState(null);
   const [desc, setDesc] = useState(null);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     
@@ -59,7 +58,7 @@ const Constituency = ({seatName} : {seatName : string}) => {
 
   return (
     <div>
-      {data != null ? 
+      {data != null && desc != null ? 
       <div className="flex items-center flex-col">
           <h1 className="font-bold mt-8 text-5xl">{seatName}</h1>
           <div className="flex flex-row">
