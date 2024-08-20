@@ -5,7 +5,7 @@ Also shows current MP by constituency via the Parliament API
 
 Built using React, Next.js, tailwind css, typescript
 # Credits
-nspiration and topojson files:
+Inspiration and topojson files:
 https://github.com/principalfish/principalfish.github.io
 
 The UK Parliament API:
