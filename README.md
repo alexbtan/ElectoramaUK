@@ -1,4 +1,4 @@
-# OpenParliament
+# ElectoramaUK
 
 A Mapping tool which displays Electoral, ethnic and age data from the UK census data
 Also shows current MP by constituency via the Parliament API
