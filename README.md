@@ -3,6 +3,7 @@
 A Mapping tool which displays Electoral, ethnic and age data from the UK census data
 Also shows current MP by constituency via the Parliament API
 
+Built using React, Next.js, tailwind css, typescript
 # Credits
 nspiration and topojson files:
 https://github.com/principalfish/principalfish.github.io
