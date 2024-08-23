@@ -93,3 +93,20 @@ type MapData = {
     objects?: any;
     arcs?: any;
 };
+
+type Member = {
+    value: {
+      nameDisplayAs: string;
+      thumbnailUrl: string;
+    };
+};
+  
+type Data = {
+    value: {
+      member: Member;
+    }[];
+};
+  
+type Desc = {
+    value: string;
+};

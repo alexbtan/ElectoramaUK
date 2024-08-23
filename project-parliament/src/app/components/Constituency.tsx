@@ -3,11 +3,10 @@
 import React, { useEffect, useState } from 'react';
 
 const Constituency = ({seatName} : {seatName : string}) => {
-  const [data, setData] = useState(null);
-  const [desc, setDesc] = useState(null);
+  const [data, setData] = useState<Data | null>(null);
+  const [desc, setDesc] = useState<Desc | null>(null);
 
   useEffect(() => {
-    
     const fetchData = async () => {
       try {
         var response = await fetch(`https://members-api.parliament.uk/api/Location/Constituency/Search?searchText=${seatName}&skip=0&take=1`, {
@@ -18,7 +17,7 @@ const Constituency = ({seatName} : {seatName : string}) => {
         });
         var conData = await response.json();
         var id = conData.items[0].value.id;
-        console.log(id);
+  
         response = await fetch(`https://members-api.parliament.uk/api/Location/Constituency/${id}/Representations`, {
           method: 'GET',
           headers: {
@@ -31,6 +30,7 @@ const Constituency = ({seatName} : {seatName : string}) => {
         }
 
         const result = await response.json();
+        sessionStorage.setItem(seatName, JSON.stringify(result));
         setData(result);
 
         response = await fetch(`https://members-api.parliament.uk/api/Location/Constituency/${id}/Synopsis`, {
@@ -45,14 +45,21 @@ const Constituency = ({seatName} : {seatName : string}) => {
         }
 
         const result2 = await response.json();
+        sessionStorage.setItem(seatName + "desc", JSON.stringify(result));
         setDesc(result2);
       } catch (error) {
-        var p = 1;
+        console.error(error);
       }
     };
-    console.log('Hello!');
     if(seatName != "Select a Constituency"){
-      fetchData();
+      const cachedData = sessionStorage.getItem(seatName);
+      const cachedDesc = sessionStorage.getItem(seatName + "desc");
+      if (cachedData && cachedDesc) {
+        setData(JSON.parse(cachedData));
+        setDesc(JSON.parse(cachedDesc));
+      } else {
+        fetchData();
+      };
     }
   }, [seatName]);
 
@@ -66,9 +73,7 @@ const Constituency = ({seatName} : {seatName : string}) => {
               <h3 className="font-bold mt-16 text-xl md:mt-0 sm:text-2xl">
                 {data.value[0].member.value.nameDisplayAs}
               </h3>
-              <p className="sm:text-lg mt-6">
-                <div dangerouslySetInnerHTML={{ __html: desc.value }}></div>
-              </p>
+              <div className="sm:text-lg mt-6" dangerouslySetInnerHTML={{ __html: desc.value }}></div>
             </div>
             <img className="block select-none mx-auto bg-gray-300 transition-colors duration-300 rounded-full w-[240px]" src={data.value[0].member.value.thumbnailUrl} alt={'MP Photo not found'}/>
           </div>
